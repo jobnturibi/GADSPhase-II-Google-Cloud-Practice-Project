@@ -1,0 +1,40 @@
+#LAB:Google Cloud Fundamentals: Getting Started with Deployment Manager and Cloud Monitoring
+#Objectives
+#In this lab, you will learn how to perform the following tasks:
+#Create a Deployment Manager deployment.
+#Update a Deployment Manager deployment.
+#View the load on a VM instance using Cloud Monitoring.
+
+#place the zone that Qwiklabs assigned you to into an environment variable called MY_ZONE
+export MY_ZONE=us-central1-a
+
+#download an editable Deployment Manager template
+gsutil cp gs://cloud-training/gcpfcoreinfra/mydeploy.yaml mydeploy.yaml
+
+#use the sed command to replace the PROJECT_ID placeholder string with your Google Cloud Platform project ID using this command:
+sed -i -e "s/PROJECT_ID/$DEVSHELL_PROJECT_ID/" mydeploy.yaml
+
+#use the sed command to replace the ZONE placeholder string with your Google Cloud Platform zone
+sed -i -e "s/ZONE/$MY_ZONE/" mydeploy.yaml
+
+#View the mydeploy.yaml file, with your modifications
+cat mydeploy.yaml
+
+#Build a deployment from the template
+gcloud deployment-manager deployments create my-first-depl --config mydeploy.yaml
+
+#update the line that with text: '  value: "apt-get update"' to 'value: "apt-get update; apt-get install nginx-light -y"'
+sed -i -e "s/apt-get update/apt-get update; apt-get install nginx-light -y/" mydeploy.yaml
+
+#update the deployment manager and install new startup script
+gcloud deployment-manager deployments update my-first-depl --config mydeploy.yaml
+
+#ssh into my-vm 
+gcloud compute ssh my-vm
+
+#create a CPU load on the vm
+dd if=/dev/urandom | gzip -9 >> /dev/null &
+
+#Terminate the workload generator
+kill %1
+
